@@ -1,11 +1,9 @@
 # We're using Debian Slim Buster image
-FROM python:3.8.4-slim-buster
+FROM python:3.9.0-slim-buster
 
 ENV PIP_NO_CACHE_DIR 1
 
 RUN sed -i.bak 's/us-west-2\.ec2\.//' /etc/apt/sources.list
-
-WORKDIR /app/
 
 # Installing Required Packages
 RUN apt update && apt upgrade -y && \
@@ -13,9 +11,7 @@ RUN apt update && apt upgrade -y && \
     debian-keyring \
     debian-archive-keyring \
     bash \
-    bzip2 \
     curl \
-    figlet \
     git \
     util-linux \
     libffi-dev \
@@ -26,55 +22,50 @@ RUN apt update && apt upgrade -y && \
     musl-dev \
     musl \
     neofetch \
-    php-pgsql \
     python3-lxml \
     postgresql \
     postgresql-client \
-    python3-psycopg2 \
     libpq-dev \
     libcurl4-openssl-dev \
     libxml2-dev \
     libxslt1-dev \
-    python3-pip \
-    python3-requests \
-    python3-sqlalchemy \
-    python3-tz \
-    python3-aiohttp \
     openssl \
     pv \
     jq \
     wget \
-    python3 \
     python3-dev \
     libreadline-dev \
     libyaml-dev \
-    gcc \
-    sqlite3 \
-    libsqlite3-dev \
-    sudo \
     zlib1g \
     ffmpeg \
     libssl-dev \
     libgconf-2-4 \
     libxi6 \
+    zlib1g-dev \
     xvfb \
     unzip \
+    make \
     libopus0 \
     libopus-dev \
+    gcc \
     && rm -rf /var/lib/apt/lists /var/cache/apt/archives /tmp
 
 # Pypi package Repo upgrade
 RUN pip3 install --upgrade pip setuptools
 
 
-# copy the dependencies file to the working directory
-COPY requirements.txt .
+# Copy Python Requirements to /root/nana
+WORKDIR /app/
 
-# install dependencies
-RUN pip install -r requirements.txt
+ENV ENV True
+
+# Install requirements
+COPY requirements.txt .
 
 # copy the content of the local src directory to the working directory
 COPY . .
 
+RUN make install
+
 # Starting Worker
-CMD ["python3","-m","nana"]
+CMD ["make","run"]
